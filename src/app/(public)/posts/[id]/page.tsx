@@ -4,6 +4,11 @@ import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css"; // コードハイライト用のスタイル
+
 type Params = {
 	params: Promise<{ id: string }>
 } // urlの情報はparamsで渡ってくる
@@ -42,7 +47,16 @@ export default async function PostPage({ params} : Params){
 					<CardTitle className='text-3xl font-bold'>{post.title}</CardTitle>
 				</CardHeader>
 				<CardContent>
-					{post.content}
+					<div className="prose max-w-none">
+						<ReactMarkdown
+							remarkPlugins={[remarkGfm]}
+							rehypePlugins={[rehypeHighlight]}
+							skipHtml={false} // HTMLスキップを無効化
+							unwrapDisallowed={true} // Markdownの改行を解釈
+						>
+						{post.content}
+						</ReactMarkdown>
+					</div>
 				</CardContent>
 			</Card>
 		</div>

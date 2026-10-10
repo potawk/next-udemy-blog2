@@ -30,4 +30,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 		},
 	}),
 	],
+	callbacks: {
+		async jwt({ token, user }) {
+			if (user?.id) token.id = user.id
+			return token
+		},
+		async session({ session, token }) {
+			if (session.user) {
+				const email = token.email ?? session.user.email ?? ''
+				session.user.email = email
+				session.user.name = token.name ?? session.user.name ?? ''
+				// セッションの sub が DB の User.id とずれると、自分の記事が 0 件になる
+				const dbUser = email
+					? await prisma.user.findUnique({ where: { email } })
+					: null
+				session.user.id = dbUser?.id ?? (token.id as string | undefined) ?? token.sub ?? ''
+			}
+			return session
+		},
+	}
 });
